@@ -1,0 +1,21 @@
+[package]
+name = "turtlesim"
+version = "0.1.0"
+description = "Turtle simulator controlled through manual control or Bissel"
+authors = ["Christopher Moran <christopher.and.moran@gmail.com>"]
+edition = "2021"
+license = "LGPL-3.0"
+repository = "https://github.com/quietlychris/turtlesim"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "turtlesim"
+
+[dependencies]
+bevy = {version = "0.6", features = ["dynamic"]}
+bissel = "0.1"
+serde = "1"
+# for logging
+tracing-subscriber = "0.3"
+tracing-appender = "0.2"
