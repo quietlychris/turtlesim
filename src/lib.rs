@@ -12,19 +12,19 @@ pub struct Host(pub BisselHost);
 #[derive(Debug, Component)]
 pub struct Node<T: Message>(pub BisselNode<T>);
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub struct UserInput {
-    pub forward: isize,
-    pub turn: isize,
+    pub forward: f32,
+    pub turn: f32,
 }
 
 impl UserInput {
-    pub fn forward(mut self, forward: isize) -> Self {
+    pub fn forward(mut self, forward: f32) -> Self {
         self.forward = forward;
         self
     }
 
-    pub fn turn(mut self, turn: isize) -> Self {
+    pub fn turn(mut self, turn: f32) -> Self {
         self.turn = turn;
         self
     }

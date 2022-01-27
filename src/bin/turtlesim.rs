@@ -125,17 +125,18 @@ fn bissel_user_input(
             UserInput::default()
         }
     };
+    let accel = 0.1;
     if keyboard_input.pressed(KeyCode::Left) {
-        user_input.turn = 1;
+        user_input.turn += accel;
     }
     if keyboard_input.pressed(KeyCode::Right) {
-        user_input.turn = -1;
+        user_input.turn -= accel;
     }
     if keyboard_input.pressed(KeyCode::Down) {
-        user_input.forward = -1;
+        user_input.forward -= accel;
     }
     if keyboard_input.pressed(KeyCode::Up) {
-        user_input.forward = 1;
+        user_input.forward += accel;
     }
     // println!("going to publish: {:?}", &user_input);
 
@@ -181,8 +182,8 @@ fn turtle_movement_system(
     // dbg!(euler);
     let heading = euler.2; // use the Z angle to calculate direction
                            // sin/cos may need to be switched depending on the initial orientation of the sprite texture
-    let x_movement = turtle.velocity.x * (movement.forward as f32) * f32::cos(heading) * delta; // * delta
-    let y_movement = turtle.velocity.y * (movement.forward as f32) * f32::sin(heading) * delta; // * delta
+    let x_movement = turtle.velocity.x * movement.forward * f32::cos(heading) * delta; // * delta
+    let y_movement = turtle.velocity.y * movement.forward * f32::sin(heading) * delta; // * delta
 
     transform.translation.x += x_movement;
     transform.translation.y += y_movement;
