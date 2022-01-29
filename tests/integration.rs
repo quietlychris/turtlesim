@@ -24,8 +24,8 @@ fn test_user_input_and_position() {
     position_node.connect().unwrap();
 
     let user_input = UserInput {
-        turn: 0,
-        forward: 0,
+        turn: 0.,
+        forward: 0.
     };
     ui_node.publish(user_input.clone()).unwrap();
     let output: UserInput = ui_node.request().unwrap();
