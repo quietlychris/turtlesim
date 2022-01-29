@@ -48,7 +48,7 @@ fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
     let sprite_bundle = SpriteBundle {
         sprite,
         texture: texture_handle,
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        transform: Transform::from_xyz(0.0, -50.0, 0.0),
         ..Default::default()
     };
 
