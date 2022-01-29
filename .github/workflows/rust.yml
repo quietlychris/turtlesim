@@ -21,4 +21,4 @@ jobs:
     - name: Build
       run: cargo build --all --verbose
     - name: Test
-      run: cargo test --verbose -- --nocapture --test-threads=1
+      run: cargo test --verbose
