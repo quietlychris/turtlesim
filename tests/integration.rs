@@ -16,12 +16,16 @@ fn test_user_input_and_position() {
         .topic("test_user_input")
         .build()
         .unwrap();
+
     let mut position_node: Node<Position> = NodeConfig::new("TEST_POS")
         .topic("test_position")
         .build()
         .unwrap();
+        
     ui_node.connect().unwrap();
     position_node.connect().unwrap();
+    println!("- Both nodes successfully connected");
+
 
     let user_input = UserInput {
         turn: 0.,
