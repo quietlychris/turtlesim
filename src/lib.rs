@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use serde::*;
 
-use bissel::*;
-use bissel::node::Node as BisselNode;
 use bissel::host::Host as BisselHost;
+use bissel::node::Node as BisselNode;
+use bissel::*;
 
 // Since Bissel's Host and Node structs don't derive the Component trait by default,
 // we use the NewType pattern to wrap them

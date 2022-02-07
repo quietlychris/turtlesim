@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::f32;
 
-use bissel::{*, Host as BisselHost, HostConfig, Node as BisselNode, NodeConfig};
+use bissel::{Host as BisselHost, HostConfig, Node as BisselNode, NodeConfig, *};
 // These are NewType wrappers around the Bissel Host and Node structs
 use turtlesim::{Host, Node};
 use turtlesim::{Position, UserInput};
@@ -52,13 +52,15 @@ fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..Default::default()
     };
 
+    // Create a new Turtle!
     let turtle = Turtle {
-        velocity: Vec3::new(200.0, 200.0, 0.0), // .normalize() * 400.0
+        velocity: Vec3::new(200.0, 200.0, 0.0),
     };
 
     commands.spawn_bundle(sprite_bundle).insert(turtle);
 }
 
+// Create a Host where Nodes can exchange information
 fn bissel_host(mut commands: Commands) {
     // Setup our Bissel host
     let bissel_host: BisselHost = HostConfig::new("lo")
@@ -85,7 +87,7 @@ fn bissel_ui_node(mut commands: Commands) {
         .unwrap()
         .connect()
         .unwrap();
-    let mut ui_node = Node(bissel_node);
+    let ui_node = Node(bissel_node);
     // Each node establishes a TCP connection with central host
 
     commands.spawn().insert(ui_node);
@@ -103,7 +105,7 @@ fn bissel_position_node(mut commands: Commands) {
         .unwrap()
         .connect()
         .unwrap();
-    let mut position_node = Node(bissel_node);
+    let position_node = Node(bissel_node);
     // Each node establishes a TCP connection with central host
 
     commands.spawn().insert(position_node);
@@ -157,8 +159,8 @@ fn turtle_movement_system(
     mut position_node_query: Query<&mut Node<Position>>,
 ) {
     let delta = time.delta_seconds();
-    let mut ui_node = ui_node_query.single_mut();
-    let mut position_node = position_node_query.single_mut();
+    let ui_node = ui_node_query.single_mut();
+    let position_node = position_node_query.single_mut();
 
     let mut movement = UserInput::default();
     match ui_node.0.request() {
@@ -206,7 +208,7 @@ fn turtle_movement_system(
             .2
             .to_degrees(),
     };
-    // println!("global position: {:?}", &position);
+    
     position_node.0.publish(position).unwrap();
 
     // Set min/max boundaries along the x- and y-axis

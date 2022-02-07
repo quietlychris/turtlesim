@@ -25,12 +25,12 @@ fn test_user_input_and_position() {
         .unwrap()
         .connect()
         .unwrap();
-        
+
     println!("- Both nodes successfully connected");
 
     let user_input = UserInput {
         turn: 0.,
-        forward: 0.
+        forward: 0.,
     };
 
     ui_node.publish(user_input.clone()).unwrap();

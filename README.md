@@ -59,13 +59,14 @@ $ cargo run --bin turtlesim --features bevy/dynamic
 ### Additional Resources
 
 Also, check out the following:
+- [Orientation](https://github.com/quietlychris/orientation): Real-time 3D orientation visualization of a BNO055 IMU using Bissel and Bevy
 - [Bevy](https://github.com/bevyengine/bevy): The Bevy game engines ECS represents an exciting new path for writing high-quality robotics simulations
 - [`turtle`](https://github.com/sunjay/turtle): Another way to move a turtle-y thing around
 - [rust-mq](https://github.com/gridgentoo/rust-mq): A ZeroMQ message client library written in Rust
 - [MOOS-IvP](https://oceanai.mit.edu/moos-ivp/pmwiki/pmwiki.php?n=Main.HomePage): Marine robotics-focused middleware
 - [ROS2](https://docs.ros.org/en/rolling/): ROS2 Rolling documentation
 
-or, [me](https://cmoran.xyz)! Is your team interested in Turtlesim, Bissel, or maybe just having another robotics developer that likes making highly-reliable systems or figuring out why your system suddenly isn't working? I'm currently available for hire in either remote or in-person positions; feel free to check out my [work history](https://cmoran.xyz/cmoran.pdf) and reach out! 
+or, [me](https://cmoran.xyz)! Is your team interested in Turtlesim, Bissel, or maybe just having another robotics engineer that likes making highly-reliable systems or figuring out why your system suddenly isn't working? I'm currently available for hire in either remote or in-person positions; feel free to check out some of my [past work](https://cmoran.xyz/cmoran.pdf) and reach out! 
 
 ### License
 Turtlesim is licensed under the Mozilla Public License, version 2.0 (MPL-2.0)
