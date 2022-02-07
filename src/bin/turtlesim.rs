@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::f32;
 
-use bissel::{Host as BisselHost, HostConfig, Node as BisselNode, NodeConfig};
+use bissel::{*, Host as BisselHost, HostConfig, Node as BisselNode, NodeConfig};
 // These are NewType wrappers around the Bissel Host and Node structs
 use turtlesim::{Host, Node};
 use turtlesim::{Position, UserInput};
@@ -78,14 +78,15 @@ fn bissel_ui_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
     let addr = "127.0.0.1:25000".parse::<std::net::SocketAddr>().unwrap();
-    let bissel_node: BisselNode<UserInput> = NodeConfig::new("TURTLESIM_UI")
+    let bissel_node: BisselNode<Active, UserInput> = NodeConfig::new("TURTLESIM_UI")
         .topic("user_input")
         .host_addr(addr)
         .build()
+        .unwrap()
+        .connect()
         .unwrap();
     let mut ui_node = Node(bissel_node);
     // Each node establishes a TCP connection with central host
-    ui_node.0.connect().unwrap();
 
     commands.spawn().insert(ui_node);
 }
@@ -95,14 +96,15 @@ fn bissel_position_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
     let addr = "127.0.0.1:25000".parse::<std::net::SocketAddr>().unwrap();
-    let bissel_node: BisselNode<Position> = NodeConfig::new("TURTLESIM_POS")
+    let bissel_node: BisselNode<Active, Position> = NodeConfig::new("TURTLESIM_POS")
         .topic("position")
         .host_addr(addr)
         .build()
+        .unwrap()
+        .connect()
         .unwrap();
     let mut position_node = Node(bissel_node);
     // Each node establishes a TCP connection with central host
-    position_node.0.connect().unwrap();
 
     commands.spawn().insert(position_node);
 }

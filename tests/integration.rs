@@ -12,25 +12,27 @@ fn test_user_input_and_position() {
     host.start().unwrap();
     println!("Host should be running in the background");
 
-    let mut ui_node: Node<UserInput> = NodeConfig::new("TEST_UI")
+    let ui_node = NodeConfig::<UserInput>::new("TEST_UI")
         .topic("test_user_input")
         .build()
+        .unwrap()
+        .connect()
         .unwrap();
 
-    let mut position_node: Node<Position> = NodeConfig::new("TEST_POS")
+    let position_node = NodeConfig::<Position>::new("TEST_POS")
         .topic("test_position")
         .build()
+        .unwrap()
+        .connect()
         .unwrap();
         
-    ui_node.connect().unwrap();
-    position_node.connect().unwrap();
     println!("- Both nodes successfully connected");
-
 
     let user_input = UserInput {
         turn: 0.,
         forward: 0.
     };
+
     ui_node.publish(user_input.clone()).unwrap();
     let output: UserInput = ui_node.request().unwrap();
     println!("deserialized output: {:?}", output);
@@ -45,4 +47,5 @@ fn test_user_input_and_position() {
     let output = position_node.request().unwrap();
     println!("deserialized output: {:?}", position);
     assert_eq!(position, output);
+    host.stop().unwrap();
 }

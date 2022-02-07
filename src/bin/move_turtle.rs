@@ -6,16 +6,15 @@ use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Build a Node for controlling the UserInput
-    let mut ui_node: Node<UserInput> = NodeConfig::new("MOVE_TURTLE_UI")
+    let ui_node = NodeConfig::<UserInput>::new("MOVE_TURTLE_UI")
         .topic("user_input")
-        .build()?;
+        .build()?
+        .connect()?;
     // Build a Node for getting Position updates
-    let mut position_node: Node<Position> = NodeConfig::new("MOVE_TURTLE_POS")
+    let position_node = NodeConfig::<Position>::new("MOVE_TURTLE_POS")
         .topic("position")
-        .build()?;
-    // Connect both Nodes
-    ui_node.connect()?;
-    position_node.connect()?;
+        .build()?
+        .connect()?;
 
     // If there's an existing position on the turtle, get it
     // Otherwise, assume that it starts at the origin
