@@ -19,6 +19,6 @@ jobs:
     - name: Install alsa and udev
       run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev    
     - name: Build
-      run: cargo build --all --verbose
+      run: cargo build --all --verbose --features bevy/dynamic
     - name: Test
-      run: cargo test -- --nocapture --test-threads-1
+      run: cargo test --features bevy/dynamic -- --nocapture --test-threads=1
