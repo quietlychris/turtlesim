@@ -1,4 +1,4 @@
-use bissel::*;
+use meadow::*;
 use turtlesim::{Position, UserInput};
 
 use std::error::Error;
@@ -9,12 +9,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ui_node = NodeConfig::<UserInput>::new("MOVE_TURTLE_UI")
         .topic("user_input")
         .build()?
-        .connect()?;
+        .activate()?;
     // Build a Node for getting Position updates
     let position_node = NodeConfig::<Position>::new("MOVE_TURTLE_POS")
         .topic("position")
         .build()?
-        .connect()?;
+        .activate()?;
 
     // If there's an existing position on the turtle, get it
     // Otherwise, assume that it starts at the origin

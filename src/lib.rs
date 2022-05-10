@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 use serde::*;
 
-use bissel::host::Host as BisselHost;
-use bissel::node::Node as BisselNode;
-use bissel::*;
+use meadow::host::Host as meadowHost;
+use meadow::node::Node as meadowNode;
+use meadow::*;
 
-// Since Bissel's Host and Node structs don't derive the Component trait by default,
+// Since meadow's Host and Node structs don't derive the Component trait by default,
 // we use the NewType pattern to wrap them
 #[derive(Debug, Component)]
-pub struct Host(pub BisselHost);
+pub struct Host(pub meadowHost);
 #[derive(Debug, Component)]
-pub struct Node<T: Message>(pub BisselNode<Active, T>);
+pub struct Node<T: Message>(pub meadowNode<Active, T>);
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub struct UserInput {

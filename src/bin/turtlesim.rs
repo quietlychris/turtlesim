@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use std::f32;
 
-use bissel::{Host as BisselHost, HostConfig, Node as BisselNode, NodeConfig, *};
-// These are NewType wrappers around the Bissel Host and Node structs
+use meadow::{Host as MeadowHost, HostConfig, Node as MeadowNode, NodeConfig, *};
+// These are NewType wrappers around the meadow Host and Node structs
 use turtlesim::{Host, Node};
 use turtlesim::{Position, UserInput};
 
@@ -18,12 +18,12 @@ fn main() {
         .add_plugins_with(DefaultPlugins, |plugins| {
             plugins.disable::<bevy::log::LogPlugin>()
         })
-        .add_startup_system(bissel_host)
-        .add_startup_system(bissel_ui_node)
-        .add_startup_system(bissel_position_node)
+        .add_startup_system(meadow_host)
+        .add_startup_system(meadow_ui_node)
+        .add_startup_system(meadow_position_node)
         .add_startup_system(setup)
         .add_startup_system(setup_asset)
-        .add_system(bissel_user_input)
+        .add_system(meadow_user_input)
         .add_system(turtle_movement_system)
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
@@ -61,63 +61,57 @@ fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 // Create a Host where Nodes can exchange information
-fn bissel_host(mut commands: Commands) {
-    // Setup our Bissel host
-    let bissel_host: BisselHost = HostConfig::new("lo")
-        .socket_num(25_000) // Port 25000 is the default address
-        .store_filename("store") // sled DBs allow persistence across reboots
+fn meadow_host(mut commands: Commands) {
+    // Setup our meadow host
+    let meadow_host: MeadowHost = HostConfig::default()// sled DBs allow persistence across reboots
         .build()
         .expect("Couldn't create a Host");
 
-    let mut host = Host(bissel_host);
+    let mut host = Host(meadow_host);
     host.0.start().unwrap();
 
     commands.spawn().insert(host);
 }
 
 // Create a node for managing UserInput
-fn bissel_ui_node(mut commands: Commands) {
+fn meadow_ui_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
-    let addr = "127.0.0.1:25000".parse::<std::net::SocketAddr>().unwrap();
-    let bissel_node: BisselNode<Active, UserInput> = NodeConfig::new("TURTLESIM_UI")
+    let meadow_node: MeadowNode<Active, UserInput> = NodeConfig::new("TURTLESIM_UI")
         .topic("user_input")
-        .host_addr(addr)
         .build()
         .unwrap()
-        .connect()
+        .activate()
         .unwrap();
-    let ui_node = Node(bissel_node);
+    let ui_node = Node(meadow_node);
     // Each node establishes a TCP connection with central host
 
     commands.spawn().insert(ui_node);
 }
 
 // Create a node for managing UserInput
-fn bissel_position_node(mut commands: Commands) {
+fn meadow_position_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
-    let addr = "127.0.0.1:25000".parse::<std::net::SocketAddr>().unwrap();
-    let bissel_node: BisselNode<Active, Position> = NodeConfig::new("TURTLESIM_POS")
+    let meadow_node: MeadowNode<Active, Position> = NodeConfig::new("TURTLESIM_POS")
         .topic("position")
-        .host_addr(addr)
         .build()
         .unwrap()
-        .connect()
+        .activate()
         .unwrap();
-    let position_node = Node(bissel_node);
+    let position_node = Node(meadow_node);
     // Each node establishes a TCP connection with central host
 
     commands.spawn().insert(position_node);
 }
 
 /// Using the Bevy-native system, we get the input of the arrow keys, and use them to
-/// form a UserInput struct, which the Node then publishes to the Bissel Host
-fn bissel_user_input(
+/// form a UserInput struct, which the Node then publishes to the meadow Host
+fn meadow_user_input(
     mut node_query: Query<&mut Node<UserInput>>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
-    let mut ui_node = node_query.single_mut();
+    let ui_node = node_query.single_mut();
 
     let mut user_input: UserInput = match ui_node.0.request() {
         Ok(val) => {
@@ -147,7 +141,7 @@ fn bissel_user_input(
     ui_node.0.publish(user_input).unwrap();
 }
 
-/// The Bissel Node now requests the UserInput from the Host, and derives the desired
+/// The meadow Node now requests the UserInput from the Host, and derives the desired
 /// forward or rotational motions, then applies those transformations to the Turtle's
 /// on-screen sprite representation. In this case, we're using the same Node to both
 /// publish and request information, but this can be done equivalently using
