@@ -4,9 +4,7 @@ use turtlesim::{Position, UserInput};
 #[test]
 fn test_user_input_and_position() {
     // Get the host up and running
-    let mut host: Host = HostConfig::new("lo")
-        .socket_num(25_000)
-        .store_filename("store")
+    let mut host: Host = HostConfig::default()
         .build()
         .unwrap();
     host.start().unwrap();
@@ -16,14 +14,14 @@ fn test_user_input_and_position() {
         .topic("test_user_input")
         .build()
         .unwrap()
-        .connect()
+        .activate()
         .unwrap();
 
     let position_node = NodeConfig::<Position>::new("TEST_POS")
         .topic("test_position")
         .build()
         .unwrap()
-        .connect()
+        .activate()
         .unwrap();
 
     println!("- Both nodes successfully connected");
