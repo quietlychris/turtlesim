@@ -25,12 +25,13 @@ fn main() {
         .add_startup_system(setup_asset)
         .add_system(meadow_user_input)
         .add_system(turtle_movement_system)
-        .add_system(bevy::input::system::exit_on_esc_system)
+        .add_startup_system(bevy::window::close_on_esc)
         .run();
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
+    
 }
 
 fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -192,12 +193,12 @@ fn turtle_movement_system(
         global_transform.translation.x as f32, global_transform.translation.y as f32,
         global_transform.rotation.to_euler(EulerRot::XYZ).2.to_degrees()
     );*/
+    let (_scale, rotation, translation) = global_transform.to_scale_rotation_translation();
 
     let position = Position {
-        x: global_transform.translation.x,
-        y: global_transform.translation.y,
-        yaw: global_transform
-            .rotation
+        x: translation.x,
+        y: translation.y,
+        yaw: rotation
             .to_euler(EulerRot::XYZ)
             .2
             .to_degrees(),
