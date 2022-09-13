@@ -48,8 +48,8 @@ Rust is language with a [mission](https://www.rust-lang.org/) of "empowering eve
 
 Turtleim can be configured to do [fast-compile](https://bevyengine.org/learn/book/getting-started/setup/#enable-fast-compiles-optional) using the Bevy dynamic linking feature. This can done by modifying the `Cargo.toml` to
 ```toml
-bevy = {version = "0.6", features = ["dynamic"]}
-# bevy = "0.6
+bevy = {version = "0.8", features = ["dynamic"]}
+# bevy = "0.8
 ```
 or built manually using this feature using 
 ```sh

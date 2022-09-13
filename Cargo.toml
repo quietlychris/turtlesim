@@ -13,7 +13,7 @@ repository = "https://github.com/quietlychris/turtlesim"
 name = "turtlesim"
 
 [dependencies]
-bevy = "0.6"
+bevy = {version = "0.8", features = ["dynamic"]}
 meadow = { git = "https://github.com/quietlychris/meadow.git", branch = "master"}
 serde = "^1"
 # for logging
