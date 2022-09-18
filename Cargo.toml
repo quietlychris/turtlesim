@@ -15,6 +15,7 @@ name = "turtlesim"
 [dependencies]
 bevy = {version = "0.8", features = ["dynamic"]}
 meadow = { git = "https://github.com/quietlychris/meadow.git", branch = "main"}
+bevy_rapier2d = { version = "0.16", features = ["debug-render"]}
 serde = "^1"
 # for logging
 tracing-subscriber = "0.3"

@@ -4,9 +4,7 @@ use turtlesim::{Position, UserInput};
 #[test]
 fn test_user_input_and_position() {
     // Get the host up and running
-    let mut host: Host = HostConfig::default()
-        .build()
-        .unwrap();
+    let mut host: Host = HostConfig::default().build().unwrap();
     host.start().unwrap();
     println!("Host should be running in the background");
 
