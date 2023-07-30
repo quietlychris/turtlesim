@@ -8,14 +8,14 @@ fn test_user_input_and_position() {
     host.start().unwrap();
     println!("Host should be running in the background");
 
-    let ui_node = NodeConfig::<UserInput>::new("TEST_UI")
+    let ui_node = NodeConfig::<Tcp, UserInput>::new("TEST_UI")
         .topic("test_user_input")
         .build()
         .unwrap()
         .activate()
         .unwrap();
 
-    let position_node = NodeConfig::<Position>::new("TEST_POS")
+    let position_node = NodeConfig::<Tcp, Position>::new("TEST_POS")
         .topic("test_position")
         .build()
         .unwrap()

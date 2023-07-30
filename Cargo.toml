@@ -13,9 +13,10 @@ repository = "https://github.com/quietlychris/turtlesim"
 name = "turtlesim"
 
 [dependencies]
-bevy = {version = "0.8", features = ["dynamic"]}
+bevy = {version = "0.11", features = ["dynamic_linking"]}
+bevy_rapier2d = "0.22.0"
 meadow = { git = "https://github.com/quietlychris/meadow.git", branch = "main"}
-bevy_rapier2d = { version = "0.16", features = ["debug-render"]}
+# meadow = { path = "../meadow", features = ["quic"]}
 serde = "^1"
 # for logging
 tracing-subscriber = "0.3"

@@ -6,12 +6,12 @@ use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Build a Node for controlling the UserInput
-    let ui_node = NodeConfig::<UserInput>::new("MOVE_TURTLE_UI")
+    let ui_node = NodeConfig::<Tcp, UserInput>::new("MOVE_TURTLE_UI")
         .topic("user_input")
         .build()?
         .activate()?;
     // Build a Node for getting Position updates
-    let position_node = NodeConfig::<Position>::new("MOVE_TURTLE_POS")
+    let position_node = NodeConfig::<Tcp, Position>::new("MOVE_TURTLE_POS")
         .topic("position")
         .build()?
         .activate()?;

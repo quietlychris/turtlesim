@@ -10,7 +10,7 @@ use meadow::*;
 #[derive(Debug, Component)]
 pub struct Host(pub meadowHost);
 #[derive(Debug, Component)]
-pub struct Node<T: Message>(pub meadowNode<Active, T>);
+pub struct Node<T: Message>(pub meadowNode<Tcp, Active, T>);
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub struct UserInput {

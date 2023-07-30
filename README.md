@@ -17,14 +17,14 @@ Assuming that you have already have Rust installed (if not, check [here](https:/
 ```sh
 $ git clone --depth=1 git@github.com:quietlychris/turtlesim.git
 $ cd turtlesim
-$ cargo build --all -features bevy/dynamic
+$ WGPU_BACKEND=gl cargo build --all
 ```
 
 Once built, run the following from one terminal, which will start the simulator and allow you to control the turtle's acceleration and movement using your arrow keys
 ```sh
 # This will start the simulator and allow you to manually 
 # move the turtle around using the arrow keys (and [ESC] to exit)
-$ cargo run --bin turtlesim --features bevy/dynamic
+$ WGPU_BACKEND=gl cargo run --bin turtlesim --features bevy/dynamic
 ```
 You can also script the turtle's motion, by running the following from another example (the first one will still be used by the simulator). Try experimenting around with creating different patterns!
 ```sh 

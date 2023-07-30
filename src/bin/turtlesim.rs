@@ -16,41 +16,46 @@ struct Turtle {
 
 fn main() {
     App::new()
-        .add_plugins_with(DefaultPlugins, |plugins| {
-            plugins.disable::<bevy::log::LogPlugin>()
-        })
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        .add_plugin(RapierDebugRenderPlugin::default())
-        .add_startup_system(meadow_host)
-        .add_startup_system(meadow_ui_node)
-        .add_startup_system(meadow_position_node)
-        .add_startup_system(setup)
-        .add_startup_system(setup_asset)
-        .add_startup_system(setup_physics)
-        .add_system(meadow_user_input)
-        .add_system(turtle_movement_system)
-        .add_system(bevy::window::close_on_esc)
+    .add_plugins(
+        DefaultPlugins.build()
+            .disable::<bevy::log::LogPlugin>(),
+            
+        )
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(RapierDebugRenderPlugin::default())
+        .add_systems(Startup, meadow_host)
+        .add_systems(Startup, meadow_ui_node)
+        .add_systems(Startup, meadow_position_node)
+        .add_systems(Startup, setup)
+        .add_systems(Startup, setup_asset)
+        .add_systems(Startup, setup_physics)
+        .add_systems(Update, meadow_user_input)
+        // .add_systems(Update, turtle_movement_system)
+        .add_systems(Update, bevy::window::close_on_esc)
         .run();
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
     commands
-        .spawn()
-        .insert(Collider::cuboid(500.0, 50.0))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)));
+        .spawn((
+        Collider::cuboid(500.0, 50.0),
+        TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0))
+    ));
 
     /* Create the bouncing ball. */
     commands
-        .spawn()
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::ball(50.0))
-        .insert(Restitution::coefficient(0.7))
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)));
+        .spawn((
+            TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)),
+            RigidBody::Dynamic,
+            Collider::ball(50.0),
+            Restitution::coefficient(0.7)
+        ));
+
 }
 
 fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -78,31 +83,38 @@ fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
 
     commands
-        .spawn_bundle(sprite_bundle)
-        .insert(turtle)
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::ball(40.0))
-        .insert(Restitution::coefficient(0.7));
+        .spawn((
+            sprite_bundle,
+            turtle,
+            RigidBody::Dynamic,
+            Collider::ball(40.0),
+            Restitution::coefficient(0.7)
+        ));
+        
 }
 
 // Create a Host where Nodes can exchange information
 fn meadow_host(mut commands: Commands) {
+    
+    // Generate certificates for QUIC 
+    // meadow::generate_certs().unwrap();
     // Setup our meadow host
-    let meadow_host: MeadowHost = HostConfig::default() // sled DBs allow persistence across reboots
+    let meadow_host: MeadowHost = HostConfig::default()// sled DBs allow persistence across reboots
+        .with_udp_config(None)
         .build()
         .expect("Couldn't create a Host");
 
     let mut host = Host(meadow_host);
     host.0.start().unwrap();
 
-    commands.spawn().insert(host);
+    commands.spawn(host);
 }
 
 // Create a node for managing UserInput
 fn meadow_ui_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
-    let meadow_node: MeadowNode<Active, UserInput> = NodeConfig::new("TURTLESIM_UI")
+    let meadow_node = NodeConfig::<Tcp, UserInput>::new("TURTLESIM_UI")
         .topic("user_input")
         .build()
         .unwrap()
@@ -111,14 +123,14 @@ fn meadow_ui_node(mut commands: Commands) {
     let ui_node = Node(meadow_node);
     // Each node establishes a TCP connection with central host
 
-    commands.spawn().insert(ui_node);
+    commands.spawn(ui_node);
 }
 
 // Create a node for managing UserInput
 fn meadow_position_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
-    let meadow_node: MeadowNode<Active, Position> = NodeConfig::new("TURTLESIM_POS")
+    let meadow_node = NodeConfig::<Tcp, Position>::new("TURTLESIM_POS")
         .topic("position")
         .build()
         .unwrap()
@@ -127,7 +139,7 @@ fn meadow_position_node(mut commands: Commands) {
     let position_node = Node(meadow_node);
     // Each node establishes a TCP connection with central host
 
-    commands.spawn().insert(position_node);
+    commands.spawn(position_node);
 }
 
 /// Using the Bevy-native system, we get the input of the arrow keys, and use them to
