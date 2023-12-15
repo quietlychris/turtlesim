@@ -6,26 +6,24 @@ use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Build a Node for controlling the UserInput
-    let ui_node = NodeConfig::<Tcp, UserInput>::new("MOVE_TURTLE_UI")
-        .topic("user_input")
+    let ui_node = NodeConfig::<Tcp, UserInput>::new("user_input")
         .build()?
         .activate()?;
     // Build a Node for getting Position updates
-    let position_node = NodeConfig::<Tcp, Position>::new("MOVE_TURTLE_POS")
-        .topic("position")
+    let position_node = NodeConfig::<Tcp, Position>::new("position")
         .build()?
         .activate()?;
 
     // If there's an existing position on the turtle, get it
     // Otherwise, assume that it starts at the origin
     let mut position = match position_node.request() {
-        Ok(position) => position,
+        Ok(position) => position.data,
         _ => Position::default(),
     };
 
     // Rotate the turtle to -90 degrees (down)
     while position.yaw > -90.0 && position.yaw <= 0.0 {
-        position = position_node.request()?;
+        position = position_node.request()?.data;
         println!("position: {:?}", position);
         let input = UserInput {
             forward: 0.0,
@@ -37,14 +35,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Move the turn to the bottom of the screen
     while position.y > -120.0 {
         ui_node.publish(UserInput::default().forward(1.0))?;
-        position = position_node.request()?;
+        position = position_node.request()?.data;
         println!("position: {:?}", position);
     }
 
     // Rotate the turtle back to the original heading
     while position.yaw < 0.0 {
         ui_node.publish(UserInput::default().turn(1.0))?;
-        position = position_node.request()?;
+        position = position_node.request()?.data;
         println!("position: {:?}", position);
     }
 
@@ -52,7 +50,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let now = Instant::now();
     while now.elapsed().as_millis() < 6_500 {
         ui_node.publish(UserInput::default().turn(1.0).forward(1.0))?;
-        position = position_node.request()?;
+        position = position_node.request()?.data;
         println!("position: {:?}", position);
     }
 

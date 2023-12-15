@@ -14,13 +14,12 @@ struct Turtle {
     velocity: Vec3,
 }
 
+#[derive(Debug, Default, Component)]
+struct Paused(bool);
+
 fn main() {
     App::new()
-    .add_plugins(
-        DefaultPlugins.build()
-            .disable::<bevy::log::LogPlugin>(),
-            
-        )
+        .add_plugins(DefaultPlugins.build().disable::<bevy::log::LogPlugin>())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, meadow_host)
@@ -30,32 +29,34 @@ fn main() {
         .add_systems(Startup, setup_asset)
         .add_systems(Startup, setup_physics)
         .add_systems(Update, meadow_user_input)
-        // .add_systems(Update, turtle_movement_system)
+        .add_systems(Update, pause)
         .add_systems(Update, bevy::window::close_on_esc)
         .run();
 }
 
 fn setup(mut commands: Commands) {
+    // Set up the default view
     commands.spawn(Camera2dBundle::default());
+    // Keep track of whether the simulation is paused or not
+    commands.spawn(Paused(false));
 }
 
-fn setup_physics(mut commands: Commands) {
+fn setup_physics(mut commands: Commands, mut time: ResMut<Time<Virtual>>) {
     /* Create the ground. */
     commands
-        .spawn((
-        Collider::cuboid(500.0, 50.0),
-        TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0))
-    ));
+        .spawn(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)))
+        .insert(Collider::cuboid(500.0, 50.0));
 
     /* Create the bouncing ball. */
     commands
-        .spawn((
-            TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)),
-            RigidBody::Dynamic,
-            Collider::ball(50.0),
-            Restitution::coefficient(0.7)
-        ));
+        .spawn(TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)))
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::ball(SPRITE_SIZE))
+        .insert(Restitution::coefficient(0.7));
 
+    // Set a "time warp" on the clock that our physics uses
+    // If we set this below 1.0, we will go very slow
+    time.set_relative_speed(3.0);
 }
 
 fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -83,24 +84,25 @@ fn setup_asset(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
 
     commands
-        .spawn((
-            sprite_bundle,
-            turtle,
-            RigidBody::Dynamic,
-            Collider::ball(40.0),
-            Restitution::coefficient(0.7)
-        ));
-        
+        .spawn(sprite_bundle)
+        .insert(turtle)
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::ball(40.0))
+        .insert(Restitution::coefficient(0.7))
+        .insert(ExternalForce {
+            force: Vec2::new(0.0, 0.0),
+            torque: 0.0,
+        })
+        .insert(ExternalImpulse {
+            impulse: Vec2::new(0.0, 0.0),
+            torque_impulse: 0.0,
+        });
 }
 
 // Create a Host where Nodes can exchange information
 fn meadow_host(mut commands: Commands) {
-    
-    // Generate certificates for QUIC 
-    // meadow::generate_certs().unwrap();
     // Setup our meadow host
-    let meadow_host: MeadowHost = HostConfig::default()// sled DBs allow persistence across reboots
-        .with_udp_config(None)
+    let meadow_host: MeadowHost = HostConfig::default() // sled DBs allow persistence across reboots
         .build()
         .expect("Couldn't create a Host");
 
@@ -114,8 +116,7 @@ fn meadow_host(mut commands: Commands) {
 fn meadow_ui_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
-    let meadow_node = NodeConfig::<Tcp, UserInput>::new("TURTLESIM_UI")
-        .topic("user_input")
+    let meadow_node = NodeConfig::<Tcp, UserInput>::new("user_input")
         .build()
         .unwrap()
         .activate()
@@ -130,8 +131,7 @@ fn meadow_ui_node(mut commands: Commands) {
 fn meadow_position_node(mut commands: Commands) {
     // Sleep for a second while setting up to allow the Host to fully get setup
     std::thread::sleep(std::time::Duration::from_millis(1_000));
-    let meadow_node = NodeConfig::<Tcp, Position>::new("TURTLESIM_POS")
-        .topic("position")
+    let meadow_node = NodeConfig::<Tcp, Position>::new("position")
         .build()
         .unwrap()
         .activate()
@@ -147,99 +147,59 @@ fn meadow_position_node(mut commands: Commands) {
 fn meadow_user_input(
     mut node_query: Query<&mut Node<UserInput>>,
     keyboard_input: Res<Input<KeyCode>>,
+    time: Res<Time>,
+    mut turtle_query: Query<(
+        &mut Turtle,
+        &mut RigidBody,
+        &mut ExternalForce,
+        &mut ExternalImpulse,
+    )>,
 ) {
     let ui_node = node_query.single_mut();
+    let (turtle, mut body, mut force, mut impulse) = turtle_query.single_mut();
 
     let mut user_input: UserInput = match ui_node.0.request() {
-        Ok(val) => {
+        Ok(msg) => {
             // info!("We're all turtles!");
-            val
+            msg.data
         }
         Err(e) => {
             error!("{:?}", e);
             UserInput::default()
         }
     };
-    let accel = 0.1;
     if keyboard_input.pressed(KeyCode::Left) {
-        user_input.turn += accel;
+        // user_input.turn += accel;
+        // impulse.torque_impulse = 0.4;
+        force.torque += -0.01;
     }
     if keyboard_input.pressed(KeyCode::Right) {
-        user_input.turn -= accel;
+        force.torque += 0.01;
     }
     if keyboard_input.pressed(KeyCode::Down) {
-        user_input.forward -= accel;
+        force.force -= Vec2::new(0.0, 1.0);
     }
     if keyboard_input.pressed(KeyCode::Up) {
-        user_input.forward += accel;
+        force.force += Vec2::new(0.0, 1.0);
     }
     // println!("going to publish: {:?}", &user_input);
 
     ui_node.0.publish(user_input).unwrap();
 }
 
-/// The meadow Node now requests the UserInput from the Host, and derives the desired
-/// forward or rotational motions, then applies those transformations to the Turtle's
-/// on-screen sprite representation. In this case, we're using the same Node to both
-/// publish and request information, but this can be done equivalently using
-fn turtle_movement_system(
-    time: Res<Time>,
-    // keyboard_input: Res<Input<KeyCode>>,
-    mut turtle_query: Query<(&mut Turtle, &mut Transform, &GlobalTransform)>,
-    mut ui_node_query: Query<&mut Node<UserInput>>,
-    mut position_node_query: Query<&mut Node<Position>>,
+fn pause(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut time: ResMut<Time<Virtual>>,
+    mut paused_query: Query<&mut Paused>,
 ) {
-    let delta = time.delta_seconds();
-    let ui_node = ui_node_query.single_mut();
-    let position_node = position_node_query.single_mut();
-
-    let mut movement = UserInput::default();
-    match ui_node.0.request() {
-        Ok(val) => {
-            // println!("{:?}", &val);
-            movement = val;
-            // After reading the turtle's input, reset the user_input data as (0,0)
-            // node.0.publish_to("user_input", UserInput::default());
+    if keyboard_input.pressed(KeyCode::Space) {
+        let mut paused = paused_query.single_mut();
+        if paused.0 == false {
+            time.pause();
+            paused.0 = true;
+        } else {
+            time.unpause();
+            paused.0 = false;
         }
-        Err(e) => println!("Error: {}", e),
-    };
-
-    let (turtle, mut transform, global_transform) = turtle_query.single_mut();
-
-    // Do rotation modifications
-    let rotation = Quat::from_rotation_z(movement.turn as f32 * delta);
-    transform.rotate(rotation);
-
-    // Modify the turtle's speed!
-    // turtle.velocity.y += (y * 20.0);
-
-    let euler = transform.rotation.to_euler(EulerRot::XYZ);
-    // dbg!(euler);
-    let heading = euler.2; // use the Z angle to calculate direction
-                           // sin/cos may need to be switched depending on the initial orientation of the sprite texture
-    let x_movement = turtle.velocity.x * movement.forward * f32::cos(heading) * delta; // * delta
-    let y_movement = turtle.velocity.y * movement.forward * f32::sin(heading) * delta; // * delta
-
-    transform.translation.x += x_movement;
-    transform.translation.y += y_movement;
-
-    /*
-    println!(
-        "x: {}, y: {}, yaw: {}",
-        global_transform.translation.x as f32, global_transform.translation.y as f32,
-        global_transform.rotation.to_euler(EulerRot::XYZ).2.to_degrees()
-    );*/
-    let (_scale, rotation, translation) = global_transform.to_scale_rotation_translation();
-
-    let position = Position {
-        x: translation.x,
-        y: translation.y,
-        yaw: rotation.to_euler(EulerRot::XYZ).2.to_degrees(),
-    };
-
-    position_node.0.publish(position).unwrap();
-
-    // Set min/max boundaries along the x- and y-axis
-    transform.translation.x = transform.translation.x.min(400.0).max(-400.0);
-    transform.translation.y = transform.translation.y.min(250.0).max(-250.0);
+    }
 }

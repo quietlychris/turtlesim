@@ -8,15 +8,13 @@ fn test_user_input_and_position() {
     host.start().unwrap();
     println!("Host should be running in the background");
 
-    let ui_node = NodeConfig::<Tcp, UserInput>::new("TEST_UI")
-        .topic("test_user_input")
+    let ui_node = NodeConfig::<Tcp, UserInput>::new("test_user_input")
         .build()
         .unwrap()
         .activate()
         .unwrap();
 
-    let position_node = NodeConfig::<Tcp, Position>::new("TEST_POS")
-        .topic("test_position")
+    let position_node = NodeConfig::<Tcp, Position>::new("test_position")
         .build()
         .unwrap()
         .activate()
@@ -30,9 +28,9 @@ fn test_user_input_and_position() {
     };
 
     ui_node.publish(user_input.clone()).unwrap();
-    let output: UserInput = ui_node.request().unwrap();
-    println!("deserialized output: {:?}", output);
-    assert_eq!(user_input, output);
+    let output = ui_node.request().unwrap();
+    println!("deserialized output: {:?}", output.data);
+    assert_eq!(user_input, output.data);
 
     let position = Position {
         x: 1.0,
@@ -42,6 +40,6 @@ fn test_user_input_and_position() {
     position_node.publish(position.clone()).unwrap();
     let output = position_node.request().unwrap();
     println!("deserialized output: {:?}", position);
-    assert_eq!(position, output);
+    assert_eq!(position, output.data);
     host.stop().unwrap();
 }
