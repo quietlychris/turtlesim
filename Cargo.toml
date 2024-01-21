@@ -15,7 +15,7 @@ name = "turtlesim"
 [dependencies]
 bevy = {version = "0.12", features = ["dynamic_linking"]}
 bevy_rapier2d = {version = "0.23", features = ["debug-render-2d"]}
-meadow = { git = "https://github.com/quietlychris/meadow.git", branch = "main"}
+meadow = "0.1"
 # meadow = { path = "../meadow", features = ["quic"]}
 serde = "^1"
 # for logging
